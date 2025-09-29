@@ -19,18 +19,17 @@
 
 				<!-- Header -->
 					<header id="header">
-						<a href="index.html" class="logo">Massively</a>
+						<a href="https://github.com/Bdqxg/PortfolioProjects/blob/main/A_B_Test.sql" class="logo">A/B Test Code</a>
 					</header>
 
 				<!-- Nav -->
 					<nav id="nav">
 						<ul class="links">
-							<li><a href="index.html">This is Massively</a></li>
-							<li class="active"><a href="generic.html">Generic Page</a></li>
-							<li><a href="elements.html">Elements Reference</a></li>
+							<li><a href="index.html">projects</a></li>
+							<li class="active"><a href="generic.html">A/B test example</a></li>
 						</ul>
-						<ul class="icons">
-							<li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+                        <ul class="icons">
+							<li><a href="https://github.com/Bdqxg/PortfolioProjects/blob/main/A_B_Test.sql" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
 						</ul>
 					</nav>
 
@@ -40,64 +39,91 @@
 						<!-- Post -->
 							<section class="post">
 								<header class="major">
-									<span class="date">April 25, 2017</span>
-									<h1>This is a<br />
-									Generic Page</h1>
-									<p>Aenean ornare velit lacus varius enim ullamcorper proin aliquam<br />
-									facilisis ante sed etiam magna interdum congue. Lorem ipsum dolor<br />
-									amet nullam sed etiam veroeros.</p>
+									<span class="date">Sept 29, 2025</span>
+									<h1>A/B Testing<br />
+									with SQL</h1>
+									<hr />
+									<p>A/B testing is one of the most common tools in modern business analytics. At its core, it is simply hypothesis testing: comparing two groups and testing whether the difference in their outcomes is statistically significant. In this blog post, I will walk through an A/B testing workflow using SQL to process data and R to visualize results. The dataset used here is simulated, but the workflow mirrors what would be done in a real experiment.</p>
+								    <hr />
 								</header>
-								<div class="image main"><img src="images/pic01.jpg" alt="" /></div>
-								<p>Donec eget ex magna. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fergiat. Pellentesque in mi eu massa lacinia malesuada et a elit. Donec urna ex, lacinia in purus ac, pretium pulvinar mauris. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Curabitur sapien risus, commodo eget turpis at, elementum convallis enim turpis, lorem ipsum dolor sit amet nullam.</p>
-								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis dapibus rutrum facilisis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Etiam tristique libero eu nibh porttitor fermentum. Nullam venenatis erat id vehicula viverra. Nunc ultrices eros ut ultricies condimentum. Mauris risus lacus, blandit sit amet venenatis non, bibendum vitae dolor. Nunc lorem mauris, fringilla in aliquam at, euismod in lectus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In non lorem sit amet elit placerat maximus. Pellentesque aliquam maximus risus. Donec eget ex magna. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum.</p>
+								<header>
+									<h3>1. Simulating the Data</h3>
+									<p>Since we don’t have a real experiment dataset, I generated mock data in MySQL. Each row represents a user, assigned randomly to group A (control) or B (treatment). Users in group A had a 30% chance of converting, while users in group B had a 20% chance.<br />
+								    This setup mimics a typical experiment:<br />
+									Group A = baseline experience<br />
+									Group B = new feature being tested</p>
+								</header>
+								<div class="image main"><img src="images/a:btest_plot/raw_experiment_events.png" alt="" /></div>
+								<header>
+									<h3>2. Data Preparation in SQL</h3>
+									<p>After generating the raw experiment data, the next step is to aggregate by user.
+                                    We create a temporary table user_level.<br />
+                                    Each row in the raw dataset represents a user’s behavior. converted = 1 means the user converted (took the target action), while 0 means no conversion. Since a single user may have multiple events, we take the maximum value of converted for each (user_id, experiment_group). This way, if a user has at least one conversion, their record will be marked as 1.<br />
+                                    From this table, we can then count: The number of users in group A and group B, How many of them converted, The conversion rate for each group.<br />
+									This aggregated view forms the basis for the statistical test that follows.</p>
+								</header>
+								<div class="image main"><img src="images/a:btest_plot/Summary.png" alt="" /></div>
+								<header>
+									<h3>3.Pivot Table for caculation</h3>
+									<p>nA and nB: number of users in group A and B<br />
+                                    xA and xB: number of conversions in each group<br />
+                                    pA and pB: conversion rates for group A and B</p>
+								</header>
+                                <div class="image main"><img src="images/a:btest_plot/A_B_pivottable.png" alt="" /></div>
+								<header>
+									<h3>4. Statistical Testing (Z-test)</h3>
+									<p>To determine whether the difference between groups is statistically significant, we calculate:<br />
+                                    The standard error of the difference in proportions<br />
+                                    The Z-score, which measures how many standard errors the observed difference is away from zero<br />
+                                    If the Z-score is large in magnitude (e.g., greater than 1.96 for a 5% significance level), we conclude the difference is statistically significant. Otherwise, the difference could be due to random chance.
+                                    </p>
+								</header>
+                                <div class="image main"><img src="images/a:btest_plot/z-score_caculation.png" alt="" /></div>
+                                <header>
+									<h3>5. Visualization in R</h3>
+									<p>Finally, we use R to create plots that illustrate:<br />
+										Conversion rates of group A vs. group B and the observed difference between groups
+                                    </p>
+								</header>
+								<div class="image main"><img src="images/a:btest_plot/result.png" alt="" /></div>
+                                <div class="image main"><img src="images/a:btest_plot/ABtest_Rplot.png" alt="" /></div>
+                                <header>
+                                     <h3>6. Interpreting the Results</h3>
+                                     <p>The analysis shows that group A had a conversion rate of 26%, while group B had a conversion rate of 24%. The difference is about 2 percentage points, with group B performing slightly worse.<br />
+                                     However, when we take sampling variability into account, the Z-score is -0.23, far from the critical values typically used to declare significance (±1.96 at the 5% level). The standard error of 0.08657 is much larger than the observed difference.<br />
+									 In plain terms, this means that the observed difference between groups A and B is so small relative to the noise in the data that we cannot rule out random chance. Statistically, the two groups are indistinguishable in terms of conversion rate.<br />
+									 In a real business context, this result would suggest that the tested change (whatever differentiates A from B) does not have a measurable effect on user conversion. 
+									</p>
+								</header>
+
 							</section>
 
 					</div>
 
 				<!-- Footer -->
 					<footer id="footer">
-						<section>
-							<form method="post" action="#">
-								<div class="fields">
-									<div class="field">
-										<label for="name">Name</label>
-										<input type="text" name="name" id="name" />
-									</div>
-									<div class="field">
-										<label for="email">Email</label>
-										<input type="text" name="email" id="email" />
-									</div>
-									<div class="field">
-										<label for="message">Message</label>
-										<textarea name="message" id="message" rows="3"></textarea>
-									</div>
-								</div>
-								<ul class="actions">
-									<li><input type="submit" value="Send Message" /></li>
-								</ul>
-							</form>
-						</section>
+				
+
 						<section class="split contact">
 							<section class="alt">
 								<h3>Address</h3>
-								<p>1234 Somewhere Road #87257<br />
-								Nashville, TN 00000-0000</p>
+								<p>Theodor-Heuss Straße 62<br />
+								37075, Göttingen</p>
 							</section>
 							<section>
 								<h3>Phone</h3>
-								<p><a href="#">(000) 000-0000</a></p>
+								<p><a href="#">(+49) 17640133127</a></p>
 							</section>
 							<section>
 								<h3>Email</h3>
-								<p><a href="#">info@untitled.tld</a></p>
+								<p><a href="#">jinyichen1220@gmail.com</a></p>
 							</section>
 							<section>
 								<h3>Social</h3>
 								<ul class="icons alt">
-									<li><a href="#" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
-									<li><a href="#" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
-									<li><a href="#" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
-									<li><a href="#" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
+
+									<li><a href="#" class="icon brands alt fa-linkedin"><span class="label">linkedin</span></a></li>
+									<li><a href="https://github.com/Bdqxg/PortfolioProjects/blob/main/AB_Test_Plot.R" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
 								</ul>
 							</section>
 						</section>
@@ -105,7 +131,7 @@
 
 				<!-- Copyright -->
 					<div id="copyright">
-						<ul><li>&copy; Untitled</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li></ul>
+						<ul><li>&copy; Design</li><li>Code of the Website: <a href="https://github.com/Bdqxg/PortfolioProjects/blob/main/A_B_Test.sql">JinyiAnalystPortwebsite</a></li></ul>
 					</div>
 
 			</div>
